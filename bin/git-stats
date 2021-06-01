@@ -1,0 +1,6 @@
+#!/usr/bin/env node
+let program = require("./git-stats.js")
+
+process.argv.shift()
+process.argv.shift()
+program.cli.gitStandup(process.argv)

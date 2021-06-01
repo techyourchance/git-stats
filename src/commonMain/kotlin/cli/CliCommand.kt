@@ -33,15 +33,8 @@ class CliCommand : CliktCommand(
     init {
         completionOption()
     }
-
-
-
     override fun run() {
-        println("git status")
+
     }
-
-
-
-
 }
 

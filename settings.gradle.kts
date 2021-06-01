@@ -23,4 +23,4 @@ gradleEnterprise {
 
 }
 
-rootProject.name = "kotlin-cli-starter"
+rootProject.name = "git-stats"
