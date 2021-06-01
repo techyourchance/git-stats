@@ -5,7 +5,7 @@ import kotlin.native.concurrent.ThreadLocal
 @ThreadLocal
 object CliConfig {
     // CUSTOMIZE_ME: use your own command-name here
-    val COMMAND_NAME = "git-standup"
+    val COMMAND_NAME = "git-stats"
 
     // CUSTOMIZE_ME: this is specific to git-standup and can be deleted
     val GIT_STANDUP_WHITELIST = ".git-standup-whitelist"

@@ -13,7 +13,7 @@ group = "cli"
 version = "0.2.0"
 
 // CUSTOMIZE_ME: the name of your command-line tool goes here
-val PROGRAM = "git-standup"
+val PROGRAM = "git-stats"
 
 repositories {
     mavenCentral()
@@ -43,7 +43,7 @@ fun KotlinNativeTargetWithHostTests.configureTarget() =
 kotlin {
 
     macosX64 { configureTarget() }
-    mingwX64 { configureTarget() }
+    //mingwX64 { configureTarget() }
     linuxX64 { configureTarget() }
 
     val jvmTarget = jvm()
@@ -109,7 +109,7 @@ kotlin {
             getByName("${targetName}Main").dependsOn(posixMain)
             getByName("${targetName}Test").dependsOn(posixTest)
         }
-        arrayOf("macosX64", "linuxX64", "mingwX64").forEach { targetName ->
+        arrayOf("macosX64", "linuxX64").forEach { targetName ->
             getByName("${targetName}Main").dependsOn(nativeMain)
             getByName("${targetName}Test").dependsOn(nativeTest)
         }

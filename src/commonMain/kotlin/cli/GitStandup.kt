@@ -25,57 +25,11 @@ suspend fun runGitStandup(args: Array<String>) {
 
     command.main(args)
 
-    if (command.help) {
-        println(command.getFormattedHelp())
-        return
-    }
+    val commits = executeCommandAndCaptureOutput("git log --pretty=format:%h".split(" "), options)
+    val commitsList = commits.lines()
 
-    val gitRepositories =
-        executeCommandAndCaptureOutput(
-            command.findCommand(),
-            options.copy(abortOnError = false, directory = currentDirectory)
-        )
-    gitRepositories.lines().filter { it.contains(".git") }.forEach { path ->
-        val repositoryPath = when {
-            path.startsWith("./") -> "$currentDirectory/" + path.removePrefix("./")
-            else -> path
-        }.removeSuffix(".git").removeSuffix("/")
-        findCommitsInRepo(repositoryPath, command)
+    commitsList.forEach {
+        println(it)
     }
 }
 
-
-suspend fun findCommitsInRepo(repositoryPath: String, command: CliCommand) {
-    val options =
-        ExecuteCommandOptions(directory = repositoryPath, abortOnError = true, redirectStderr = true, trim = true)
-
-    if (fileIsReadable("$repositoryPath/.git").not()) {
-        if (command.verbose) println("Skipping non-repository with path='$repositoryPath'")
-    }
-    if (command.verbose) {
-        println("findCommitsInRepo($repositoryPath)")
-    }
-    // fetch the latest commits if necessary
-    if (command.fetch) {
-        val fetchCommand = listOf(GIT, "fetch", "--all")
-        if (command.verbose) println(fetchCommand)
-        try {
-            executeCommandAndCaptureOutput(fetchCommand, options)
-        } catch (e: Exception) {
-            println("Warning: could not fetch commits from repository $repositoryPath ; error $e")
-        }
-    }
-
-    // history
-    val result = executeCommandAndCaptureOutput(command.gitLogCommand(), options)
-    if (result.isNotBlank()) {
-        println("# $repositoryPath")
-        println(result)
-    } else if (command.silence.not()) {
-        println("# $repositoryPath")
-        println("No commits from ${command.authorName()} during this period")
-    }
-    if (command.verbose) {
-        println("$ " + command.gitLogCommand())
-    }
-}
