@@ -12,7 +12,6 @@ plugins {
 group = "cli"
 version = "0.2.0"
 
-// CUSTOMIZE_ME: the name of your command-line tool goes here
 val PROGRAM = "git-stats"
 
 repositories {
@@ -169,7 +168,8 @@ tasks.register<Copy>("install") {
 
 
     dependsOn("runDebugExecutable$nativeTarget")
-    from("build/bin/native/debugExecutable") {
+    from("build/bin/$nativeTarget/debugExecutable") {
+        include("$PROGRAM.kexe")
         rename { PROGRAM }
     }
     into(destDir)
