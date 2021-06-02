@@ -1,9 +1,10 @@
 package cli
 
-import cli.CliConfig.CURRENT_GIT_USER
-import cli.CliConfig.FIND
 import cli.CliConfig.GIT
-import io.*
+import io.ExecuteCommandOptions
+import io.executeCommandAndCaptureOutput
+import io.fileIsReadable
+import io.findExecutable
 
 var options = ExecuteCommandOptions(directory = ".", abortOnError = true, redirectStderr = true, trim = true)
 
@@ -18,16 +19,16 @@ suspend fun runGitStats(args: Array<String>) {
         options = options.copy(directory = pwd.removeSuffix(jsPackage))
     }
     GIT = findExecutable(GIT)
-    FIND = findExecutable(FIND)
-    CURRENT_GIT_USER = executeCommandAndCaptureOutput(listOf(GIT, "config", "user.name"), options)
     val command = CliCommand()
-    val currentDirectory = executeCommandAndCaptureOutput(listOf("pwd"), options).trim()
 
     command.main(args)
 
-    val fileStats = parseCommits()
-    printStats(fileStats)
-
+    if (fileIsReadable(".git")) {
+        val fileStats = parseCommits()
+        printStats(fileStats)
+    } else {
+        println("git-stats must be run inside a git repository")
+    }
 }
 
 fun printStats(fileStats: Map<String, Int>) {
@@ -39,7 +40,7 @@ fun printStats(fileStats: Map<String, Int>) {
 
 suspend fun parseCommits(): Map<String, Int> {
     val gitLogOutput: String = executeCommandAndCaptureOutput("git log  --numstat --name-only".split(" "), options)
-    val  commits = parseGitlogOutput(gitLogOutput)
+    val commits = parseGitlogOutput(gitLogOutput)
 
     val fileStats = mutableMapOf<String, Int>()
     commits.forEach { commit ->
@@ -68,8 +69,14 @@ suspend fun parseCommitFiles(commits: GitCommit, fileStats: MutableMap<String, I
 }
 
 
-data class GitCommit(val commit: String, val branches: String, val author: String, val date: String, val message: String, val files: List<String>)
-{
+data class GitCommit(
+    val commit: String,
+    val branches: String,
+    val author: String,
+    val date: String,
+    val message: String,
+    val files: List<String>
+) {
     companion object {
         operator fun invoke(text: String): GitCommit {
             val lines = text.lines()
@@ -82,7 +89,7 @@ data class GitCommit(val commit: String, val branches: String, val author: Strin
             val startIndex = lines.indexOfLast { it.startsWith("    ") } + 1
             val files = lines.subList(startIndex, lines.size)
                 .filter { it.isNotBlank() }
-            return GitCommit(commit, branches, author, date, message,files)
+            return GitCommit(commit, branches, author, date, message, files)
         }
     }
 
